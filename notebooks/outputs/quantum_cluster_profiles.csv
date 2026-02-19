@@ -1,0 +1,5 @@
+q_cluster,workers,pct_underpaid,pct_female,avg_wage,avg_gap,avg_experience,avg_education,cluster_label
+0,743,0.626,0.408,18678.417,844.598,12.673,2.845,Skilled Formal
+1,555,0.836,0.578,14739.695,4845.89,10.656,1.463,Gender-Disadvantaged
+2,208,0.764,0.24,14682.221,4954.798,7.976,4.899,Low-Wage Informal
+3,494,0.628,0.0,18506.49,883.186,8.623,0.437,Low-Skill Contract

@@ -1,0 +1,5 @@
+policies,total_impact_pct,total_cost,avg_wage_gap,est_wage_increase,cluster,cluster_label,workers
+"contract_transparency, gender_pay_audit, skill_training_programs, union_support",46.0,13,4902.0,2255.0,0,Skilled Formal,743
+"gender_pay_audit, discrimination_penalties, enforcement_improvement",49.0,14,5254.0,2574.0,1,Gender-Disadvantaged,555
+"union_support, minimum_wage_enforcement, enforcement_improvement",47.0,14,8090.0,3802.0,2,Low-Wage Informal,208
+"contract_transparency, union_support, minimum_wage_enforcement, gender_pay_audit",52.0,12,1872.0,974.0,3,Low-Skill Contract,494

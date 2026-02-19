@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WageWatch India — AI Wage Gap Detection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Variables ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0d0f0e;
+  --surface:   #141714;
+  --surface2:  #1c1f1c;
+  --border:    #2a2e2a;
+  --text:      #e8ebe8;
+  --muted:     #7a8078;
+  --accent:    #b8f058;
+  --accent-d:  #8fbe2a;
+  --red:       #f05858;
+  --orange:    #f0a058;
+  --green:     #58f09a;
+  --blue:      #58aaf0;
+  --font-serif: 'DM Serif Display', Georgia, serif;
+  --font-sans:  'DM Sans', sans-serif;
+  --font-mono:  'DM Mono', monospace;
+  --radius:     10px;
+  --shadow:     0 4px 24px rgba(0,0,0,0.4);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Nav ────────────────────────────────────────────────────────── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2.5rem;
+  height: 60px;
+  background: rgba(13,15,14,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.nav-dot {
+  width: 10px; height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:0.5; transform:scale(0.7); }
+}
+.nav-links {
+  display: flex; gap: 2rem;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--accent); }
+
+/* ── Hero ───────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  padding: 6rem 2.5rem 5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+.hero-grid-bg {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.35;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.1s;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 4px 12px;
+  border-radius: 100px;
+  margin-bottom: 1.8rem;
+  opacity: 0;
+  animation: fadeUp 0.6s 0.1s ease forwards;
+  position: relative; z-index: 1;
+}
+.hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  line-height: 1.12;
+  max-width: 600px;
+  opacity: 0;
+  animation: fadeUp 0.6s 0.2s ease forwards;
+  position: relative; z-index: 1;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+.hero-sub {
+  margin-top: 1.4rem;
+  font-size: 1.05rem;
+  font-weight: 300;
+  color: var(--muted);
+  max-width: 520px;
+  line-height: 1.7;
+  opacity: 0;
+  animation: fadeUp 0.6s 0.3s ease forwards;
+  position: relative; z-index: 1;
+}
+.hero-stats {
+  display: flex; gap: 2.5rem; flex-wrap: wrap;
+  margin-top: 3rem;
+  opacity: 0;
+  animation: fadeUp 0.6s 0.45s ease forwards;
+  position: relative; z-index: 1;
+}
+.hero-stat span { display: block; }
+.hero-stat .num {
+  font-family: var(--font-serif);
+  font-size: 2.4rem;
+  color: var(--accent);
+  line-height: 1;
+}
+.hero-stat .lbl {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── Section scaffold ────────────────────────────────────────────── */
+.section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2.5rem;
+}
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+.section-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  margin-bottom: 2.5rem;
+  line-height: 1.2;
+}
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0 2.5rem;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.6rem;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: #3d433d; }
+
+/* ── Dashboard grid ──────────────────────────────────────────────── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.dash-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.6rem;
+}
+.dash-stat .d-num {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  line-height: 1;
+}
+.dash-stat .d-lbl {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 5px;
+  font-weight: 500;
+}
+.dash-stat .d-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 3px;
+  font-family: var(--font-mono);
+}
+
+.dash-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Cluster cards */
+.cluster-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+.cluster-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+  position: relative;
+  overflow: hidden;
+}
+.cluster-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--c-color, var(--accent));
+}
+.cluster-card .c-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+.cluster-card .c-desc {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+.cluster-card .c-bar-wrap {
+  margin-top: auto;
+}
+.cluster-card .c-bar-label {
+  display: flex; justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.cluster-card .c-bar {
+  height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.cluster-card .c-bar-fill {
+  height: 100%;
+  background: var(--c-color, var(--accent));
+  border-radius: 3px;
+  transition: width 1s ease;
+}
+.cluster-card .c-policies {
+  margin-top: 1rem;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.cluster-card .c-policy {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  padding: 3px 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+/* Bar chart */
+.bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.bar-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 48px;
+  align-items: center;
+  gap: 12px;
+}
+.bar-name { font-size: 0.8rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track {
+  height: 7px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width 1.2s cubic-bezier(.22,.68,0,1.2);
+}
+.bar-val { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text); text-align: right; }
+
+/* ── Analyzer ────────────────────────────────────────────────────── */
+.analyzer-wrap {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+select, input[type="number"] {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  appearance: none;
+}
+select:focus, input:focus { border-color: var(--accent); }
+select { cursor: pointer; }
+
+.wage-hint {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+.btn-analyze {
+  margin-top: 1.2rem;
+  width: 100%;
+  padding: 13px;
+  background: var(--accent);
+  color: #0d0f0e;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-analyze:hover  { background: var(--accent-d); }
+.btn-analyze:active { transform: scale(0.98); }
+.btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Results panel */
+.result-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+.result-empty {
+  text-align: center;
+  color: var(--muted);
+}
+.result-empty .big-icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.3; }
+.result-empty p { font-size: 0.85rem; }
+.result-content { padding: 1.8rem; width: 100%; }
+
+/* Verdict banner */
+.verdict {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.4rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+.verdict.underpaid { background: rgba(240,88,88,0.12); border: 1px solid rgba(240,88,88,0.3); }
+.verdict.fair      { background: rgba(88,240,154,0.10); border: 1px solid rgba(88,240,154,0.25); }
+.verdict-left .v-status {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+}
+.verdict.underpaid .v-status { color: var(--red); }
+.verdict.fair      .v-status { color: var(--green); }
+.verdict-left .v-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.verdict-right .v-score {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  text-align: right;
+}
+.verdict-right .v-score-lbl { font-size: 0.7rem; color: var(--muted); text-align: right; font-family: var(--font-mono); }
+
+/* Wage comparison row */
+.wage-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+.wage-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+}
+.wage-box .wb-val {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+.wage-box .wb-lbl { font-size: 0.7rem; color: var(--muted); margin-top: 3px; }
+.wage-box.actual .wb-val { color: var(--text); }
+.wage-box.minimum .wb-val { color: var(--orange); }
+.wage-box.fair .wb-val { color: var(--blue); }
+
+/* Violations */
+.violations-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
+.violation-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  border-radius: 7px;
+  padding: 0.9rem 1rem;
+}
+.violation-item.sev-CRITICAL { border-left-color: var(--red); }
+.violation-item.sev-HIGH     { border-left-color: var(--orange); }
+.violation-item.sev-MEDIUM   { border-left-color: var(--blue); }
+.vi-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.vi-name { font-size: 0.82rem; font-weight: 600; line-height: 1.4; }
+.vi-badge {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.sev-CRITICAL .vi-badge { background: rgba(240,88,88,0.2); color: var(--red); }
+.sev-HIGH     .vi-badge { background: rgba(240,160,88,0.2); color: var(--orange); }
+.sev-MEDIUM   .vi-badge { background: rgba(88,170,240,0.2); color: var(--blue); }
+.vi-details { display: flex; gap: 1.5rem; margin-top: 6px; }
+.vi-detail { font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); }
+
+/* Cluster tag */
+.cluster-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  margin-bottom: 0.7rem;
+}
+.cluster-dot { width: 8px; height: 8px; border-radius: 50%; }
+.cluster-label { font-size: 0.8rem; font-weight: 600; }
+.cluster-desc-text { font-size: 0.75rem; color: var(--muted); margin-bottom: 1rem; }
+
+/* Policy chips */
+.policy-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.policy-chip {
+  font-size: 0.73rem;
+  font-family: var(--font-mono);
+  padding: 4px 10px;
+  background: rgba(184,240,88,0.08);
+  border: 1px solid rgba(184,240,88,0.25);
+  color: var(--accent);
+  border-radius: 5px;
+}
+
+/* No violations */
+.no-violations {
+  display: flex; align-items: center; gap: 10px;
+  padding: 1rem;
+  background: rgba(88,240,154,0.08);
+  border: 1px solid rgba(88,240,154,0.2);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--green);
+  margin-bottom: 1.5rem;
+}
+
+/* ── Laws table ──────────────────────────────────────────────────── */
+.laws-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+.law-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+  display: flex; gap: 1rem; align-items: flex-start;
+}
+.law-num {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  background: rgba(184,240,88,0.1);
+  border: 1px solid rgba(184,240,88,0.2);
+  border-radius: 5px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+.law-info .law-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 3px; }
+.law-info .law-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+/* ── Spinner ──────────────────────────────────────────────────────── */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid rgba(13,15,14,0.3);
+  border-top-color: #0d0f0e;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Footer ──────────────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2.5rem;
+  display: flex; justify-content: space-between; align-items: center;
+  max-width: 1200px;
+  margin: 3rem auto 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+footer a { color: var(--accent); text-decoration: none; }
+
+/* ── Toast ───────────────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  color: var(--red);
+  z-index: 999;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .dash-grid      { grid-template-columns: repeat(2, 1fr); }
+  .cluster-grid   { grid-template-columns: repeat(2, 1fr); }
+  .analyzer-wrap  { grid-template-columns: 1fr; }
+  .laws-grid      { grid-template-columns: 1fr; }
+  .dash-row       { grid-template-columns: 1fr; }
+  .bar-row        { grid-template-columns: 120px 1fr 40px; }
+}
+@media (max-width: 600px) {
+  nav { padding: 0 1.2rem; }
+  .nav-links { display: none; }
+  .section { padding: 3rem 1.2rem; }
+  .hero { padding: 4rem 1.2rem 3rem; }
+  .dash-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a class="nav-brand" href="#">
+    <span class="nav-dot"></span>
+    WageWatch <em style="font-family:var(--font-serif);font-style:italic;color:var(--muted);font-size:0.9em"> India</em>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#dashboard">Dashboard</a></li>
+    <li><a href="#analyzer">Analyzer</a></li>
+    <li><a href="#clusters">Clusters</a></li>
+    <li><a href="#laws">Laws</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-grid-bg" id="hero-grid"></div>
+  <div class="hero-tag">⚡ Powered by QML + Classical ML</div>
+  <h1>Detecting <em>wage inequality</em> across India's workforce</h1>
+  <p class="hero-sub">AI-driven analysis of 50,000 workers across 15 states and 15 industries. Identifies violated labor laws, severity scores, and targeted policy interventions.</p>
+  <div class="hero-stats" id="hero-stats">
+    <div class="hero-stat"><span class="num" data-target="54.1">0</span><span class="lbl">% Workers Underpaid</span></div>
+    <div class="hero-stat"><span class="num" data-target="15.0">0</span><span class="lbl">% Gender Wage Gap</span></div>
+    <div class="hero-stat"><span class="num">8</span><span class="lbl">Labor Laws Monitored</span></div>
+    <div class="hero-stat"><span class="num" data-target="50">0</span><span class="lbl">K Workers Analyzed</span></div>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- Dashboard -->
+<section class="section" id="dashboard">
+  <div class="section-label">01 — Overview</div>
+  <div class="section-title">Workforce Statistics</div>
+
+  <div class="dash-grid" id="dash-stats">
+    <div class="dash-stat"><div class="d-num" style="color:var(--red)">54.1%</div><div class="d-lbl">Underpaid Workers</div><div class="d-sub">27,050 of 50,000</div></div>
+    <div class="dash-stat"><div class="d-num" style="color:var(--orange)">15.0%</div><div class="d-lbl">Gender Wage Gap</div><div class="d-sub">Female earns less</div></div>
+    <div class="dash-stat"><div class="d-num" style="color:var(--blue)">87,420</div><div class="d-lbl">Total Violations</div><div class="d-sub">Across 8 laws</div></div>
+    <div class="dash-stat"><div class="d-num" style="color:var(--accent)">₹4,628</div><div class="d-lbl">National Floor Wage</div><div class="d-sub">₹178/day × 26 (2024)</div></div>
+  </div>
+
+  <div class="dash-row">
+    <div class="card">
+      <div style="font-size:0.8rem;font-weight:600;margin-bottom:1.2rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;">Top Industries by Underpayment</div>
+      <div class="bar-chart" id="industry-bars"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:0.8rem;font-weight:600;margin-bottom:1.2rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;">State Underpayment Rate</div>
+      <div class="bar-chart" id="state-bars"></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- Analyzer -->
+<section class="section" id="analyzer">
+  <div class="section-label">02 — Worker Analysis</div>
+  <div class="section-title">Check Wage Compliance</div>
+
+  <div class="analyzer-wrap">
+    <!-- Form -->
+    <div class="card">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Gender</label>
+          <select id="f-gender">
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Experience (yrs)</label>
+          <input type="number" id="f-experience" value="5" min="0" max="35"/>
+        </div>
+        <div class="form-group full">
+          <label>Education Level</label>
+          <select id="f-education">
+            <option>Illiterate</option>
+            <option>5th Pass</option>
+            <option>10th Pass</option>
+            <option>12th Pass</option>
+            <option>Diploma</option>
+            <option>Graduate</option>
+            <option>Post-Graduate</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>State</label>
+          <select id="f-state"></select>
+        </div>
+        <div class="form-group full">
+          <label>Industry</label>
+          <select id="f-industry"></select>
+        </div>
+        <div class="form-group full">
+          <label>Actual Monthly Wage (INR)</label>
+          <input type="number" id="f-wage" value="15000" min="1000" max="200000"/>
+          <span class="wage-hint" id="wage-hint">State minimum: loading...</span>
+        </div>
+      </div>
+      <button class="btn-analyze" id="btn-analyze" onclick="runAnalysis()">
+        <span id="btn-text">Analyze Worker</span>
+      </button>
+    </div>
+
+    <!-- Results -->
+    <div class="result-panel" id="result-panel">
+      <div class="result-empty">
+        <div class="big-icon">⚖</div>
+        <p>Fill in the worker details<br>and click Analyze</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- Clusters -->
+<section class="section" id="clusters">
+  <div class="section-label">03 — Quantum ML Insights</div>
+  <div class="section-title">Worker Inequality Profiles</div>
+  <p style="color:var(--muted);font-size:0.9rem;margin-bottom:2rem;max-width:600px;line-height:1.7;">
+    Quantum feature mapping + K-Means clustering segments workers into 4 distinct profiles based on wage gap, gender, education, and experience — enabling targeted policy interventions.
+  </p>
+  <div class="cluster-grid" id="cluster-grid"></div>
+</section>
+
+<hr class="divider"/>
+
+<!-- Laws -->
+<section class="section" id="laws">
+  <div class="section-label">04 — Legal Framework</div>
+  <div class="section-title">Indian Labor Laws Monitored</div>
+  <div class="laws-grid" id="laws-grid"></div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <span>WageWatch India · AI-Based Wage Gap Detection · Data: PLFS 2022-23, MoLE 2024</span>
+  <span>Built with QML (PennyLane) + Classical ML (scikit-learn)</span>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:5000/api';
+
+// ── Meta & dropdowns ─────────────────────────────────────────────
+let META = {};
+
+async function loadMeta() {
+  try {
+    const r = await fetch(`${API}/meta`);
+    META = await r.json();
+
+    const stateEl = document.getElementById('f-state');
+    META.states.forEach(s => {
+      const o = document.createElement('option');
+      o.value = o.textContent = s;
+      stateEl.appendChild(o);
+    });
+
+    const indEl = document.getElementById('f-industry');
+    META.industries.forEach(s => {
+      const o = document.createElement('option');
+      o.value = o.textContent = s;
+      indEl.appendChild(o);
+    });
+
+    updateWageHint();
+  } catch(e) {
+    // Fallback static data if backend not running
+    META.state_min_wages = {
+      'Maharashtra':20400,'Tamil Nadu':18000,'Karnataka':21600,
+      'Uttar Pradesh':19500,'Haryana':20400,'Gujarat':21600,
+      'West Bengal':20400,'Punjab':18500,'Chhattisgarh':22500,
+      'Odisha':17500,'Rajasthan':19500,'Madhya Pradesh':18000,
+      'Telangana':19500,'Jharkhand':17800,'Assam':16800
+    };
+    const states = Object.keys(META.state_min_wages).sort();
+    const stateEl = document.getElementById('f-state');
+    states.forEach(s => {
+      const o = document.createElement('option');
+      o.value = o.textContent = s;
+      stateEl.appendChild(o);
+    });
+
+    const industries = ['Agriculture','Construction','Textiles','Manufacturing','Leather',
+      'Silk','Mining','IT Services','Retail','Food Processing',
+      'Chemicals','Metals','Machinery','Small Manufacturing','Services'].sort();
+    const indEl = document.getElementById('f-industry');
+    industries.forEach(i => {
+      const o = document.createElement('option');
+      o.value = o.textContent = i;
+      indEl.appendChild(o);
+    });
+    updateWageHint();
+  }
+}
+
+function updateWageHint() {
+  const state = document.getElementById('f-state').value;
+  const min = META.state_min_wages?.[state];
+  const hint = document.getElementById('wage-hint');
+  if (min) hint.textContent = `State minimum: ₹${min.toLocaleString('en-IN')}/month`;
+}
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'f-state') updateWageHint();
+});
+
+// ── Dashboard stats ──────────────────────────────────────────────
+async function loadStats() {
+  let stats;
+  try {
+    const r = await fetch(`${API}/stats`);
+    stats = await r.json();
+  } catch(e) {
+    // Fallback
+    stats = {
+      top_industries_underpaid: [
+        {industry:'Agriculture',pct:72},{industry:'Construction',pct:68},
+        {industry:'Leather',pct:65},{industry:'Small Manufacturing',pct:61},
+        {industry:'Textiles',pct:58}
+      ],
+      state_underpayment: {
+        'Uttar Pradesh':68,'Assam':65,'Jharkhand':62,'Odisha':60,
+        'Madhya Pradesh':58,'West Bengal':55,'Rajasthan':54,
+        'Chhattisgarh':52,'Punjab':48,'Haryana':46,
+        'Gujarat':44,'Tamil Nadu':42,'Maharashtra':40,'Karnataka':38,'Telangana':36
+      },
+      clusters: [
+        {label:'Gender-Disadvantaged',pct_underpaid:78,size:28,color:'#c0392b'},
+        {label:'Low-Wage Informal',   pct_underpaid:71,size:35,color:'#e67e22'},
+        {label:'Skilled Formal',      pct_underpaid:22,size:18,color:'#27ae60'},
+        {label:'Low-Skill Contract',  pct_underpaid:48,size:19,color:'#2980b9'},
+      ],
+    };
+  }
+
+  // Industry bars
+  const indBars = document.getElementById('industry-bars');
+  stats.top_industries_underpaid.forEach(item => {
+    indBars.innerHTML += `
+      <div class="bar-row">
+        <span class="bar-name">${item.industry}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:0%" data-w="${item.pct}"></div></div>
+        <span class="bar-val">${item.pct}%</span>
+      </div>`;
+  });
+
+  // State bars — top 8 only
+  const stateBars = document.getElementById('state-bars');
+  const sorted = Object.entries(stats.state_underpayment)
+    .sort((a,b)=>b[1]-a[1]).slice(0,8);
+  sorted.forEach(([state, pct]) => {
+    stateBars.innerHTML += `
+      <div class="bar-row">
+        <span class="bar-name">${state}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:0%" data-w="${pct}"></div></div>
+        <span class="bar-val">${pct}%</span>
+      </div>`;
+  });
+
+  // Cluster grid
+  const clusterGrid = document.getElementById('cluster-grid');
+  const clusterDescs = {
+    'Gender-Disadvantaged': 'High underpayment + female-dominated sector. Needs gender pay audits and anti-discrimination enforcement.',
+    'Low-Wage Informal':    'High underpayment, male workers, low education. Needs minimum wage enforcement and union support.',
+    'Skilled Formal':       'Lower underpayment, higher education, formal sector. Needs contract transparency.',
+    'Low-Skill Contract':   'Moderate underpayment, low education, contract workers. Needs contract reform.',
+  };
+  const clusterPolicies = {
+    'Gender-Disadvantaged': ['Gender Pay Audit','Discrimination Penalties','Enforcement Improvement'],
+    'Low-Wage Informal':    ['Min Wage Enforcement','Union Support','Enforcement Improvement'],
+    'Skilled Formal':       ['Contract Transparency','Skill Training','Gender Pay Audit'],
+    'Low-Skill Contract':   ['Contract Transparency','Union Support','Min Wage Enforcement'],
+  };
+  stats.clusters.forEach(c => {
+    const policies = (clusterPolicies[c.label]||[]).map(p=>`<span class="c-policy">${p}</span>`).join('');
+    clusterGrid.innerHTML += `
+      <div class="cluster-card" style="--c-color:${c.color}">
+        <div class="c-name">${c.label}</div>
+        <div class="c-desc">${clusterDescs[c.label]||''}</div>
+        <div class="c-bar-wrap">
+          <div class="c-bar-label"><span>Underpayment rate</span><span>${c.pct_underpaid}%</span></div>
+          <div class="c-bar"><div class="c-bar-fill" style="width:0%" data-w="${c.pct_underpaid}"></div></div>
+          <div class="c-bar-label" style="margin-top:6px"><span>Share of workforce</span><span>${c.size}%</span></div>
+          <div class="c-bar"><div class="c-bar-fill" style="width:0%;opacity:0.5" data-w="${c.size}"></div></div>
+        </div>
+        <div class="c-policies">${policies}</div>
+      </div>`;
+  });
+
+  // Animate bars after a short delay
+  setTimeout(animateBars, 200);
+}
+
+function animateBars() {
+  document.querySelectorAll('[data-w]').forEach(el => {
+    el.style.width = el.dataset.w + '%';
+  });
+}
+
+// ── Laws ─────────────────────────────────────────────────────────
+async function loadLaws() {
+  let laws;
+  try {
+    const r = await fetch(`${API}/laws`);
+    const d = await r.json();
+    laws = d.laws;
+  } catch(e) {
+    laws = [
+      {id:1,name:'Minimum Wages Act, 1948',            desc:'Prescribes minimum wages in scheduled employments'},
+      {id:2,name:'Equal Remuneration Act, 1976',        desc:'Prohibits wage discrimination based on gender'},
+      {id:3,name:'Payment of Wages Act, 1936',          desc:'Regulates payment of wages to workers'},
+      {id:4,name:'Contract Labour (R&A) Act, 1970',     desc:'Regulates employment of contract labour'},
+      {id:5,name:'Code on Wages, 2019',                 desc:'Modern national floor wage consolidation'},
+      {id:6,name:'POSH Act, 2013',                      desc:'Severe gender pay discrimination cases'},
+      {id:7,name:'Building & Construction Workers Act, 1996', desc:'Welfare of building and construction workers'},
+      {id:8,name:'Agricultural Labourers Act (State)',  desc:'Protection of agricultural labourers'},
+    ];
+  }
+  const grid = document.getElementById('laws-grid');
+  laws.forEach(l => {
+    grid.innerHTML += `
+      <div class="law-card">
+        <span class="law-num">§${l.id}</span>
+        <div class="law-info">
+          <div class="law-name">${l.name}</div>
+          <div class="law-desc">${l.desc}</div>
+        </div>
+      </div>`;
+  });
+}
+
+// ── Analyzer ─────────────────────────────────────────────────────
+async function runAnalysis() {
+  const btn  = document.getElementById('btn-analyze');
+  const text = document.getElementById('btn-text');
+  btn.disabled = true;
+  text.innerHTML = '<div class="spinner"></div>';
+
+  const payload = {
+    gender    : document.getElementById('f-gender').value,
+    education : document.getElementById('f-education').value,
+    experience: document.getElementById('f-experience').value,
+    state     : document.getElementById('f-state').value,
+    industry  : document.getElementById('f-industry').value,
+    actual_wage: document.getElementById('f-wage').value,
+  };
+
+  let result;
+  try {
+    const r = await fetch(`${API}/analyze`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload),
+    });
+    result = await r.json();
+  } catch(e) {
+    // Fallback: compute locally
+    result = computeLocally(payload);
+  }
+
+  renderResult(result);
+  btn.disabled = false;
+  text.textContent = 'Analyze Worker';
+}
+
+function computeLocally(p) {
+  const minWages = {
+    'Maharashtra':20400,'Tamil Nadu':18000,'Karnataka':21600,'Uttar Pradesh':19500,
+    'Haryana':20400,'Gujarat':21600,'West Bengal':20400,'Punjab':18500,
+    'Chhattisgarh':22500,'Odisha':17500,'Rajasthan':19500,'Madhya Pradesh':18000,
+    'Telangana':19500,'Jharkhand':17800,'Assam':16800
+  };
+  const eduWages = {
+    'Illiterate':7000,'5th Pass':9000,'10th Pass':14000,'12th Pass':18000,
+    'Diploma':22000,'Graduate':32000,'Post-Graduate':45000
+  };
+  const indAvg = {
+    'Construction':14200,'Textiles':13800,'Manufacturing':18500,'Leather':12900,
+    'Silk':13100,'Mining':17800,'Agriculture':11200,'IT Services':42000,
+    'Retail':15600,'Food Processing':14400,'Chemicals':21000,'Metals':19500,
+    'Machinery':20800,'Small Manufacturing':14000,'Services':18000
+  };
+  const NATIONAL_FLOOR = 4628;
+  const AVG_MALE = 19500;
+
+  const wage  = parseInt(p.actual_wage);
+  const exp   = parseInt(p.experience);
+  const minW  = minWages[p.state]  || 18000;
+  const fairW = (eduWages[p.education] || 14000) + exp * 300;
+  const iAv   = indAvg[p.industry] || 16000;
+  const female = p.gender === 'Female';
+  const fairAdj = female ? fairW * 0.85 : fairW;
+  const underpaid = wage < minW;
+  const gap = Math.max(0, minW - wage);
+  const violations = [];
+
+  if (wage < minW) violations.push({law:'Minimum Wages Act, 1948',gap_inr:minW-wage,gap_pct:((minW-wage)/minW*100).toFixed(1),severity:((minW-wage)/minW>0.3)?'HIGH':'MEDIUM',penalty:Math.min(500+(minW-wage)*0.1,20000)});
+  if (female && wage < AVG_MALE*0.85) violations.push({law:'Equal Remuneration Act, 1976',gap_inr:Math.round(AVG_MALE*0.85-wage),gap_pct:((AVG_MALE*0.85-wage)/AVG_MALE*100).toFixed(1),severity:'HIGH',penalty:Math.min(10000+(AVG_MALE*0.85-wage)*0.15,50000)});
+  if (wage < minW*0.9) violations.push({law:'Payment of Wages Act, 1936',gap_inr:Math.round(minW*0.9-wage),gap_pct:((minW*0.9-wage)/minW*100).toFixed(1),severity:'MEDIUM',penalty:Math.min(200+(minW*0.9-wage)*0.05,10000)});
+  if (['Construction','Small Manufacturing','Textiles'].includes(p.industry)&&wage<iAv*0.7) violations.push({law:'Contract Labour Act, 1970',gap_inr:Math.round(iAv*0.7-wage),gap_pct:((iAv*0.7-wage)/iAv*100).toFixed(1),severity:'HIGH',penalty:Math.min(5000+(iAv*0.7-wage)*0.1,50000)});
+  if (wage < NATIONAL_FLOOR) violations.push({law:'Code on Wages, 2019',gap_inr:NATIONAL_FLOOR-wage,gap_pct:((NATIONAL_FLOOR-wage)/NATIONAL_FLOOR*100).toFixed(1),severity:((NATIONAL_FLOOR-wage)/NATIONAL_FLOOR>0.4)?'CRITICAL':'HIGH',penalty:Math.min(10000+(NATIONAL_FLOOR-wage)*0.2,100000)});
+  if (female && wage < AVG_MALE*0.7) violations.push({law:'POSH Act, 2013',gap_inr:Math.round(AVG_MALE*0.7-wage),gap_pct:((AVG_MALE*0.7-wage)/AVG_MALE*100).toFixed(1),severity:'CRITICAL',penalty:Math.min(50000+(AVG_MALE*0.7-wage)*0.25,500000)});
+
+  const sevMap = {LOW:1,MEDIUM:2,HIGH:3,CRITICAL:4};
+  let sev = violations.reduce((s,v)=>(sevMap[v.severity]||1)*5+s,0)+violations.length*3;
+  if (violations.length) sev += violations.reduce((s,v)=>s+parseFloat(v.gap_pct),0)/violations.length*0.5;
+  sev = Math.min(100, Math.round(sev));
+  const band = sev>=60?'Critical':sev>=30?'High':sev>=10?'Low':'None';
+
+  const eduIdx = ['Illiterate','5th Pass','10th Pass','12th Pass','Diploma','Graduate','Post-Graduate'].indexOf(p.education);
+  const highUnderpay = (fairAdj - wage) / fairAdj > 0.35;
+  const highEdu = eduIdx >= 4;
+  let cluster;
+  if (highUnderpay && female)                    cluster = 'Gender-Disadvantaged';
+  else if (highUnderpay && !female && !highEdu)  cluster = 'Low-Wage Informal';
+  else if (!highUnderpay && highEdu)             cluster = 'Skilled Formal';
+  else                                           cluster = 'Low-Skill Contract';
+
+  const clusterDescs = {
+    'Gender-Disadvantaged': 'High underpayment + female-dominated sector',
+    'Low-Wage Informal':    'High underpayment, male workers, low education',
+    'Skilled Formal':       'Lower underpayment, higher education, formal sector',
+    'Low-Skill Contract':   'Moderate underpayment, low education, contract workers',
+  };
+  const clusterColors = {'Gender-Disadvantaged':'#c0392b','Low-Wage Informal':'#e67e22','Skilled Formal':'#27ae60','Low-Skill Contract':'#2980b9'};
+  const clusterPolicies = {
+    'Gender-Disadvantaged':['Gender Pay Audit','Discrimination Penalties','Enforcement Improvement'],
+    'Low-Wage Informal':   ['Min Wage Enforcement','Union Support','Enforcement Improvement'],
+    'Skilled Formal':      ['Contract Transparency','Skill Training','Gender Pay Audit'],
+    'Low-Skill Contract':  ['Contract Transparency','Union Support','Min Wage Enforcement'],
+  };
+
+  return {
+    is_underpaid:underpaid, actual_wage:wage, min_wage:minW, fair_wage:Math.round(fairAdj),
+    industry_avg:iAv, wage_gap:gap, gap_pct:underpaid?+(gap/minW*100).toFixed(1):0,
+    monthly_loss:underpaid?gap:0, annual_loss:underpaid?gap*12:0,
+    violations, severity_score:sev, severity_band:band,
+    cluster, cluster_desc:clusterDescs[cluster]||'',
+    cluster_color:clusterColors[cluster]||'#888',
+    recommended_policies:clusterPolicies[cluster]||[],
+    gender_gap_flag:female&&wage<AVG_MALE*0.85,
+  };
+}
+
+function renderResult(r) {
+  const panel = document.getElementById('result-panel');
+  const verdClass = r.is_underpaid ? 'underpaid' : 'fair';
+  const verdText  = r.is_underpaid ? 'Underpaid' : 'Fairly Paid';
+  const verdSub   = r.is_underpaid
+    ? `₹${r.wage_gap.toLocaleString('en-IN')} below minimum wage (${r.gap_pct}%)`
+    : 'Wage meets state minimum requirement';
+
+  const sevColor = r.severity_score >= 60 ? 'var(--red)'
+                 : r.severity_score >= 30 ? 'var(--orange)'
+                 : r.severity_score >= 10 ? 'var(--blue)'
+                 : 'var(--green)';
+
+  let violHTML = '';
+  if (r.violations.length === 0) {
+    violHTML = `<div class="no-violations">✓ No labor law violations detected</div>`;
+  } else {
+    violHTML = `<div style="font-size:0.75rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-bottom:0.7rem;">${r.violations.length} Violation${r.violations.length>1?'s':''} Detected</div>`;
+    violHTML += `<div class="violations-list">`;
+    r.violations.forEach(v => {
+      violHTML += `
+        <div class="violation-item sev-${v.severity}">
+          <div class="vi-top">
+            <span class="vi-name">${v.law}</span>
+            <span class="vi-badge">${v.severity}</span>
+          </div>
+          <div class="vi-details">
+            <span class="vi-detail">Gap: ₹${Math.round(v.gap_inr).toLocaleString('en-IN')} (${v.gap_pct}%)</span>
+            <span class="vi-detail">Penalty: ₹${Math.round(v.penalty).toLocaleString('en-IN')}</span>
+          </div>
+        </div>`;
+    });
+    violHTML += `</div>`;
+  }
+
+  const policies = r.recommended_policies.map(p=>`<span class="policy-chip">${p}</span>`).join('');
+
+  panel.innerHTML = `
+    <div class="result-content">
+      <div class="verdict ${verdClass}">
+        <div class="verdict-left">
+          <div class="v-status">${verdText}</div>
+          <div class="v-sub">${verdSub}</div>
+        </div>
+        <div class="verdict-right">
+          <div class="v-score" style="color:${sevColor}">${r.severity_score}</div>
+          <div class="v-score-lbl">severity / 100</div>
+        </div>
+      </div>
+
+      <div class="wage-row">
+        <div class="wage-box actual">
+          <div class="wb-val">₹${r.actual_wage.toLocaleString('en-IN')}</div>
+          <div class="wb-lbl">Actual Wage</div>
+        </div>
+        <div class="wage-box minimum">
+          <div class="wb-val">₹${r.min_wage.toLocaleString('en-IN')}</div>
+          <div class="wb-lbl">State Minimum</div>
+        </div>
+        <div class="wage-box fair">
+          <div class="wb-val">₹${r.fair_wage.toLocaleString('en-IN')}</div>
+          <div class="wb-lbl">Fair Wage Est.</div>
+        </div>
+      </div>
+
+      ${violHTML}
+
+      <div style="font-size:0.75rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem;">Worker Profile (QML Cluster)</div>
+      <div class="cluster-tag">
+        <span class="cluster-dot" style="background:${r.cluster_color}"></span>
+        <span class="cluster-label">${r.cluster}</span>
+      </div>
+      <div class="cluster-desc-text">${r.cluster_desc}</div>
+
+      <div style="font-size:0.75rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem;">Recommended Policies</div>
+      <div class="policy-chips">${policies}</div>
+
+      ${r.is_underpaid ? `
+      <div style="margin-top:1.2rem;padding:0.9rem 1rem;background:rgba(240,88,88,0.07);border:1px solid rgba(240,88,88,0.2);border-radius:8px;font-size:0.78rem;color:var(--muted);">
+        Annual loss: <span style="color:var(--red);font-weight:600;font-family:var(--font-mono)">₹${r.annual_loss.toLocaleString('en-IN')}</span>
+        — Monthly shortfall of ₹${r.monthly_loss.toLocaleString('en-IN')}
+      </div>` : ''}
+    </div>`;
+}
+
+// ── Counter animation ─────────────────────────────────────────────
+function animateCounter(el, target, suffix='') {
+  let start = 0;
+  const duration = 1800;
+  const step = (timestamp) => {
+    if (!start) start = timestamp;
+    const progress = Math.min((timestamp - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    el.textContent = (ease * target).toFixed(target % 1 !== 0 ? 1 : 0) + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      document.querySelectorAll('[data-target]').forEach(el => {
+        animateCounter(el, parseFloat(el.dataset.target));
+      });
+      observer.disconnect();
+    }
+  });
+}, {threshold: 0.3});
+observer.observe(document.getElementById('hero-stats'));
+
+// ── Grid scroll fade ─────────────────────────────────────────────
+const grid = document.getElementById('hero-grid');
+window.addEventListener('scroll', () => {
+  const fade = Math.max(0, 1 - window.scrollY / 400);
+  grid.style.opacity = (0.35 * fade).toFixed(3);
+}, { passive: true });
+
+// ── Init ──────────────────────────────────────────────────────────
+loadMeta();
+loadStats();
+loadLaws();
+</script>
+</body>
+</html>

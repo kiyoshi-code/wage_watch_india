@@ -1,0 +1,8 @@
+law_id,law_name,workers_affected,avg_gap_inr,total_loss_inr,avg_penalty_inr,critical_count
+1,"Minimum Wages Act, 1948",35285,6508.0,229636703.0,1151.0,0
+3,"Payment of Wages Act, 1936",30600,5374.0,164452036.0,469.0,0
+2,"Equal Remuneration Act, 1976",10113,4436.0,44857165.0,10665.0,0
+6,"POSH Act, 2013 (Severe Discrimination)",6992,3080.0,21537128.0,50770.0,6992
+8,Agricultural Labourers Act (State),3947,2502.0,9873743.0,1150.0,0
+4,"Contract Labour (R&A) Act, 1970",3004,1680.0,5046463.0,5168.0,0
+7,"Building & Construction Workers Act, 1996",2610,2450.0,6393872.0,2196.0,0

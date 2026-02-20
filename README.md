@@ -1,1 +1,1 @@
-WageWatch India combines classical and quantum machine learning to detect wage inequality across 50,000 workers in 15 states — flagging labor law violations, scoring severity, and delivering targeted policy interventions.
+

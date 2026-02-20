@@ -4,6 +4,7 @@ Mirrors the logic from Classical_ML.ipynb and Root_Cause_Analysis.ipynb
 Run: pip install flask flask-cors && python app.py
 """
 
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import numpy as np
